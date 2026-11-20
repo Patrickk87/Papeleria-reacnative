@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 
 import type { Product } from '../types';
+import { COLORS, SPACING, TYPOGRAPHY } from '../theme';
 
 interface ItemCardProps {
   product: Product;
@@ -59,11 +60,11 @@ export function ItemCard({
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E8E2D9',
-    marginBottom: 16,
+    borderColor: COLORS.border,
+    marginBottom: SPACING.lg,
     overflow: 'hidden',
   },
   cardPressed: {
@@ -75,23 +76,23 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
-    padding: 14,
+    padding: SPACING.md,
     justifyContent: 'space-between',
   },
   category: {
-    fontSize: 11,
+    fontSize: TYPOGRAPHY.small,
     fontWeight: '700',
-    color: '#8B7355',
+    color: COLORS.primary,
     textTransform: 'uppercase',
   },
   name: {
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.productName,
     fontWeight: '700',
-    color: '#292524',
+    color: COLORS.text,
   },
   description: {
-    fontSize: 12,
-    color: '#78716C',
+    fontSize: TYPOGRAPHY.body,
+    color: COLORS.textSecondary,
     lineHeight: 18,
   },
   footer: {
@@ -99,21 +100,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: SPACING.xs,
   },
   price: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#256D5A',
+    color: COLORS.primary,
   },
   stock: {
-    fontSize: 11,
-    color: '#57534E',
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.stock,
   },
   action: {
-    fontSize: 12,
+    fontSize: TYPOGRAPHY.caption,
     fontWeight: '700',
-    color: '#256D5A',
-    marginTop: 8,
+    color: COLORS.primary,
+    marginTop: SPACING.sm,
   },
 });

@@ -1,107 +1,210 @@
+import { useCallback, useMemo, useState } from 'react';
 
 import {
   Alert,
-  ScrollView,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
+  TextInput,
   View,
+  type ListRenderItem,
 } from 'react-native';
 
 import { products } from '../data/products';
 import type { Product } from '../types';
 import { ItemCard } from '../components/ItemCard';
+import { COLORS, SPACING, TYPOGRAPHY } from '../theme';
 
 export default function HomeScreen(): React.JSX.Element {
-  const handleSelectProduct = (product: Product): void => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredProducts = useMemo(() => {
+    const query = searchQuery.trim().toLocaleLowerCase('es-CO');
+
+    if (!query) {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const searchableText = [
+        product.name,
+        product.category,
+        product.description,
+      ]
+        .join(' ')
+        .toLocaleLowerCase('es-CO');
+
+      return searchableText.includes(query);
+    });
+  }, [searchQuery]);
+
+  const handleSelectProduct = useCallback((product: Product): void => {
     Alert.alert(
       'Producto seleccionado',
       `${product.name}\nPrecio: $ ${product.price.toLocaleString('es-CO')}\nStock: ${product.stock}`,
     );
-  };
+  }, []);
+
+  const renderProduct: ListRenderItem<Product> = useCallback(
+    ({ item }) => (
+      <ItemCard
+        product={item}
+        onSelect={handleSelectProduct}
+      />
+    ),
+    [handleSelectProduct],
+  );
 
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.header}>
-        <Text style={styles.logo}>PAPELERÍA</Text>
-        <Text style={styles.subtitle}>
-          Todo para estudiar y crear
-        </Text>
-      </View>
+      <FlatList
+        data={filteredProducts}
+        keyExtractor={(item) => item.id}
+        renderItem={renderProduct}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+        ListHeaderComponent={
+          <View>
+            <View style={styles.header}>
+              <Text style={styles.logo}>PAPELERÍA</Text>
+              <Text style={styles.subtitle}>
+                Todo para estudiar y crear
+              </Text>
+            </View>
 
-      <View style={styles.section}>
-        <Text style={styles.title}>Nuestros productos</Text>
-        <Text style={styles.description}>
-          Encuentra los artículos que necesitas.
-        </Text>
-      </View>
+            <View style={styles.section}>
+              <Text style={styles.title}>Nuestros productos</Text>
 
-      <View style={styles.productList}>
-        {products.map((product) => (
-          <ItemCard
-            key={product.id}
-            product={product}
-            onSelect={handleSelectProduct}
-          />
-        ))}
-      </View>
+              <Text style={styles.description}>
+                Encuentra los artículos que necesitas.
+              </Text>
+            </View>
 
-      <Text style={styles.footer}>
-        Papelería · Catálogo de productos
-      </Text>
-    </ScrollView>
+            <View style={styles.searchContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Buscar productos..."
+                placeholderTextColor={COLORS.muted}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="search"
+              />
+            </View>
+
+            <Text style={styles.resultCount}>
+              {`${filteredProducts.length} productos encontrados`}
+            </Text>
+          </View>
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>
+              No encontramos productos
+            </Text>
+
+            <Text style={styles.emptyDescription}>
+              Intenta buscar con otro nombre o categoría.
+            </Text>
+          </View>
+        }
+        ListFooterComponent={
+          <Text style={styles.footer}>
+            Papelería · Catálogo de productos
+          </Text>
+        }
+      />
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F5F0',
+    backgroundColor: COLORS.background,
   },
   content: {
-    padding: 20,
+    padding: SPACING.xl,
     paddingTop: 55,
     paddingBottom: 35,
+    flexGrow: 1,
   },
   header: {
-    backgroundColor: '#256D5A',
-    padding: 24,
+    backgroundColor: COLORS.primary,
+    padding: SPACING.xxl,
     borderRadius: 18,
     marginBottom: 28,
   },
   logo: {
-    color: '#FFFFFF',
+    color: COLORS.surface,
     fontSize: 25,
     fontWeight: '800',
     letterSpacing: 2,
   },
   subtitle: {
-    color: '#E4F1E9',
-    fontSize: 14,
-    marginTop: 8,
+    color: COLORS.primaryLight,
+    fontSize: TYPOGRAPHY.subtitle,
+    marginTop: SPACING.sm,
   },
   section: {
-    marginBottom: 18,
+    marginBottom: SPACING.lg,
   },
   title: {
-    fontSize: 22,
+    fontSize: TYPOGRAPHY.title,
     fontWeight: '800',
-    color: '#292524',
+    color: COLORS.text,
   },
   description: {
-    color: '#78716C',
-    fontSize: 13,
-    marginTop: 6,
+    color: COLORS.textSecondary,
+    fontSize: TYPOGRAPHY.body,
+    marginTop: SPACING.xs,
   },
-  productList: {
-    marginTop: 5,
+  searchContainer: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    marginBottom: SPACING.md,
+  },
+  input: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    fontSize: TYPOGRAPHY.body,
+    color: COLORS.text,
+  },
+  resultCount: {
+    fontSize: TYPOGRAPHY.caption,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.lg,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    padding: SPACING.xxl,
+    marginTop: SPACING.xxl,
+  },
+  emptyTitle: {
+    fontSize: TYPOGRAPHY.productName,
+    fontWeight: '700',
+    color: COLORS.text,
+    textAlign: 'center',
+  },
+  emptyDescription: {
+    fontSize: TYPOGRAPHY.body,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginTop: SPACING.sm,
   },
   footer: {
     textAlign: 'center',
-    color: '#A8A29E',
-    fontSize: 12,
-    marginTop: 12,
+    color: COLORS.muted,
+    fontSize: TYPOGRAPHY.caption,
+    marginTop: SPACING.md,
   },
 });
