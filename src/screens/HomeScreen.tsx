@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import {
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -12,12 +11,22 @@ import {
   type ListRenderItem,
 } from 'react-native';
 
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+
 import { products } from '../data/products';
 import type { Product } from '../types';
 import { ItemCard } from '../components/ItemCard';
 import { COLORS, SPACING, TYPOGRAPHY } from '../theme';
+import type { HomeStackParamList } from '../navigation/types';
 
-export default function HomeScreen(): React.JSX.Element {
+type HomeScreenProps = NativeStackScreenProps<
+  HomeStackParamList,
+  'HomeList'
+>;
+
+export default function HomeScreen({
+  navigation,
+}: HomeScreenProps): React.JSX.Element {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredProducts = useMemo(() => {
@@ -40,12 +49,15 @@ export default function HomeScreen(): React.JSX.Element {
     });
   }, [searchQuery]);
 
-  const handleSelectProduct = useCallback((product: Product): void => {
-    Alert.alert(
-      'Producto seleccionado',
-      `${product.name}\nPrecio: $ ${product.price.toLocaleString('es-CO')}\nStock: ${product.stock}`,
-    );
-  }, []);
+  const handleSelectProduct = useCallback(
+    (product: Product): void => {
+      navigation.navigate('HomeDetail', {
+        id: product.id,
+        name: product.name,
+      });
+    },
+    [navigation],
+  );
 
   const renderProduct: ListRenderItem<Product> = useCallback(
     ({ item }) => (
@@ -132,7 +144,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: SPACING.xl,
-    paddingTop: 55,
+    paddingTop: 30,
     paddingBottom: 35,
     flexGrow: 1,
   },
